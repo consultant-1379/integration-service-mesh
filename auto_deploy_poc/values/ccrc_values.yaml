@@ -1,0 +1,247 @@
+tags:
+  eric-nrf-notify-agent: true
+  eric-nrf-discovery-agent: true
+  eric-nrf-accesstoken-agent: true
+global:
+  nrfagent_disc_and_ntf_service_enabled: true
+  nrfagent_accesstoken_service_enabled: true
+  profiles:
+    small-system:
+      enabled: true
+    std-system:
+      enabled: false
+    cleartext:
+      enabled: true
+    mtls:
+      enabled: false
+    mtls-and-cleartext:
+      enabled: false
+  scheduler:
+    nodeSelector: {}
+  adpNamespace: "5g-integration"
+  registry:
+    url: armdocker.rnd.ericsson.se
+    pullSecret: armdocker
+  nrf:
+    istio:
+      traffic_ingressGatewayHTTPPort: 80
+  istio:
+    nrfagent_nf_ingressgws:
+    - eric-nssf-traffic-gateway
+    - eric-nrf-traffic-gateway
+    sidecar:
+      inject: false
+    egress:
+      enabled: false
+  nssf:
+    istio:
+      traffic_ingressGatewayHTTPPort: 83
+  networkPolicy:
+    enabled: false
+
+eric-nrf:
+  eric-data-kvdb-ag-operator:
+    resources:
+      operator:
+        requests:
+          cpu: 100m
+          memory: 550Mi
+
+  eric-data-kvdb-ag:
+    replicaCount:
+      locator: 1
+      server: 1
+    persistence:
+      data:
+        persistentVolumeClaim:
+          storageClassName: "erikube-rbd"
+      backup:
+        persistentVolumeClaim:
+          storageClassName: "erikube-rbd"
+      gwsender:
+        persistentVolumeClaim:
+          storageClassName: "erikube-rbd"
+    jvmHeap:
+      initDepend: 100m
+      database:
+        locator: 512m
+        server: 512m
+      monitor: 256m
+      jmxExporter: 128m
+
+    jvmOptions:
+      initDepend:
+      database:
+        locator:
+        - '"-XX:+UseG1GC"'
+        - '"-XX:MaxGCPauseMillis=10"'
+        - '"-Xlog:gc:file=srvgc.log"'
+        server:
+        - '"-XX:+UseG1GC"'
+        - '"-XX:MaxGCPauseMillis=10"'
+        - '"-Xlog:gc:file=srvgc.log"'
+        - '"-Dgeode.feature-protobuf-protocol=true"'
+      monitor:
+      jmxExporter:
+
+    resources:
+      server:
+        requests:
+          memory: 0
+          cpu: 0
+      locator:
+        requests:
+          memory: 0
+          cpu: 0
+      adminMgr:
+        requests:
+          memory: 0
+          cpu: 0
+      monitor:
+        requests:
+          memory: 0
+          cpu: 0
+      jmxExporter:
+        requests:
+          memory: 0
+          cpu: 0
+      initDepend:
+        requests:
+          memory: 0
+          cpu: 0
+      initDb:
+        requests:
+          memory: 0
+          cpu: 0
+
+    probing:
+      readiness:
+        initialDelaySeconds: 50
+      liveness:
+        monitor:
+          initialDelaySeconds: 60
+        database:
+          initialDelaySeconds: 60
+        jmxExporter:
+          initialDelaySeconds: 60
+
+  eric-nrf-common:
+    dbproxy:
+      replicaCount: 2
+      resources:
+        requests:
+          memory: 1000Mi
+          cpu: 250m
+        limits:
+          memory: 1000Mi
+          cpu: 500m
+
+  eric-nrf-management:
+    mgmt:
+      replicaCount: 1
+      resources:
+        requests:
+          memory: 100Mi
+          cpu: 100m
+        limits:
+          memory: 400Mi
+          cpu: 200m  
+      warmup:
+        num: "'10'"
+
+    notification:
+      replicaCount: 1
+      resources:
+        requests:
+          memory: 100Mi
+          cpu: 100m
+        limits:
+          memory: 400Mi
+          cpu: 200m  
+        
+  eric-nrf-discovery:
+    disc:
+      replicaCount: 1
+      resources:
+        requests:
+          memory: 100Mi
+          cpu: 100m
+        limits:
+          memory: 400Mi
+          cpu: 200m
+      proxy:
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+
+  eric-nrf-provision:
+    prov:
+      replicaCount: 1
+      resources:
+        requests:
+          memory: 100Mi 
+          cpu: 100m
+        limits:
+          memory: 400Mi
+          cpu: 200m
+
+eric-nssf:
+  eric-data-kvdb-ag:
+    persistence:
+      data:
+        persistentVolumeClaim:
+          storageClassName: erikube-rbd
+      backup:
+        persistentVolumeClaim:
+          storageClassName: erikube-rbd
+    replicaCount:
+      locator: 1
+      server: 1
+
+    probing:
+      readiness:
+        initialDelaySeconds: 40
+        timeoutSeconds: 3
+        adminMgr:
+          timeoutSeconds: 3
+      liveness:
+        database:
+          initialDelaySeconds: 90
+        monitor:
+          initialDelaySeconds: 90
+        jmxExporter:
+          initialDelaySeconds: 90
+
+    requests:
+      initDepend:
+        cpu: 0
+        memory: 0
+      initDb:
+        cpu: 0
+        memory: 0
+      database:
+        locator:
+          cpu: 0
+          memory: 0
+        server:
+          cpu: 0
+          memory: 0
+      monitor:
+        cpu: 0
+        memory: 0
+      jmxExporter:
+        cpu: 0
+        memory: 0
+      adminMgr:
+        cpu: 0
+        memory: 0
+
+    jvmHeap:
+      initDepend: 100m
+      database:
+        locator: 512m
+        server: 512m
+      monitor: 512m
+      jmxExporter: 128m
+      adminMgr: 512m

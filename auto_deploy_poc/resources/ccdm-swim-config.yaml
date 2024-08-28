@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    ericsson.com/description: CCDM VNF SW package which includes UDR and NFs plus
+      the required common components (ADP-GS and NRF-Agent).
+    ericsson.com/product-name: ERIC-CCDM
+    ericsson.com/product-number: CXP 9037 622
+    ericsson.com/product-revision: 1.2.6
+    ericsson.com/production-date: "2020-09-10T12:19:15+02:00"
+    ericsson.com/type: Release
+    meta.helm.sh/release-name: eric-udr
+    meta.helm.sh/release-namespace: 5g-integration
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    ericsson.com/swim: enabled
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:ericsson.com/description: {}
+          f:ericsson.com/product-name: {}
+          f:ericsson.com/product-number: {}
+          f:ericsson.com/product-revision: {}
+          f:ericsson.com/production-date: {}
+          f:ericsson.com/type: {}
+          f:meta.helm.sh/release-name: {}
+          f:meta.helm.sh/release-namespace: {}
+        f:labels:
+          .: {}
+          f:app.kubernetes.io/managed-by: {}
+          f:ericsson.com/swim: {}
+    manager: Go-http-client
+    operation: Update
+    time: "2020-09-11T16:45:13Z"
+  name: ccdm-swim-config
+  selfLink: /api/v1/namespaces/eric-ccdm/configmaps/ccdm-swim-config

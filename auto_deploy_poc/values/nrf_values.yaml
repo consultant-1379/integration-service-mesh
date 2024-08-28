@@ -1,0 +1,155 @@
+global:
+  scheduler:
+    nodeSelector: {}
+  adpNamespace: "5g-integration"
+  registry:
+    url: armdocker.rnd.ericsson.se
+    pullSecret: armdocker
+  nrf:
+    istio:
+      traffic_ingressGatewayHTTPPort: 80
+
+eric-data-kvdb-ag-operator:
+  resources:
+    operator:
+      requests:
+        cpu: 100m
+        memory: 550Mi
+
+eric-data-kvdb-ag:
+  replicas:
+    locator: 1
+    server: 1
+  persistence:
+    data:
+      persistentVolumeClaim:
+        storageClassName: "erikube-rbd"
+    backup:
+      persistentVolumeClaim:
+        storageClassName: "erikube-rbd"
+    gwsender:
+      persistentVolumeClaim:
+        storageClassName: "erikube-rbd"
+  jvmHeap:
+    initDepend: 100m
+    database:
+      locator: 512m
+      server: 512m
+    monitor: 256m
+    jmxExporter: 128m
+
+  jvmOptions:
+    initDepend:
+    database:
+      locator:
+      - '"-XX:+UseG1GC"'
+      - '"-XX:MaxGCPauseMillis=10"'
+      - '"-Xlog:gc:file=srvgc.log"'
+      server:
+      - '"-XX:+UseG1GC"'
+      - '"-XX:MaxGCPauseMillis=10"'
+      - '"-Xlog:gc:file=srvgc.log"'
+      - '"-Dgeode.feature-protobuf-protocol=true"'
+    monitor:
+    jmxExporter:
+
+  resources:
+    server:
+      requests:
+        memory: 0
+        cpu: 0
+    locator:
+      requests:
+        memory: 0
+        cpu: 0
+    adminMgr:
+      requests:
+        memory: 0
+        cpu: 0
+    monitor:
+      requests:
+        memory: 0
+        cpu: 0
+    jmxExporter:
+      requests:
+        memory: 0
+        cpu: 0
+    initDepend:
+      requests:
+        memory: 0
+        cpu: 0
+    initDb:
+      requests:
+        memory: 0
+        cpu: 0
+
+  probing:
+    readiness:
+      initialDelaySeconds: 50
+    liveness:
+      monitor:
+        initialDelaySeconds: 60
+      database:
+        initialDelaySeconds: 60
+      jmxExporter:
+        initialDelaySeconds: 60
+
+eric-nrf-common:
+  dbproxy:
+    resources:
+      requests:
+        memory: 300Mi
+        cpu: 50m
+      limits:
+        memory: 600Mi
+        cpu: 100m
+
+eric-nrf-management:
+  mgmt:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 100m
+      limits:
+        memory: 400Mi
+        cpu: 200m  
+    warmup:
+      num: "'10'"
+
+  notification:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 100m
+      limits:
+        memory: 400Mi
+        cpu: 200m  
+        
+eric-nrf-discovery:
+  disc:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 100m
+      limits:
+        memory: 400Mi
+        cpu: 200m
+    proxy:
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
+
+eric-nrf-provision:
+  prov:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: 100Mi 
+        cpu: 100m
+      limits:
+        memory: 400Mi
+        cpu: 200m

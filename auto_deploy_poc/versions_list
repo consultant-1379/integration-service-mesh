@@ -1,0 +1,23 @@
+#THESE NAMES MATCH NAMES IN CM ericsson-<nf>
+kvdb=https://arm.seli.gic.ericsson.se/artifactory/proj-5g-ccdm-released-helm-local/eric-ccdm-kvdb-1.12.15-1.tgz
+ccdm=https://arm.seli.gic.ericsson.se/artifactory/proj-5g-ccdm-released-helm-local/eric-ccdm-1.12.15-1.tgz
+#eda=https://arm.epk.ericsson.se/artifactory/proj-activation-poc-helm/activation/eric-act-ccdm-2.11.42-4.tgz
+nrf=https://arm.epk.ericsson.se/artifactory/proj-nrf-generic-local/helm/eric-nrf-1.7.2-1.tgz
+nrf-agent=https://arm.epk.ericsson.se/artifactory/proj-nrf-client-helm/eric-nrfagent-1.7.2-1.tgz
+nssf=https://arm.epk.ericsson.se/artifactory/proj-nssf-helm/eric-nssf-1.7.2-1.tgz
+ccrc=https://arm.epk.ericsson.se/artifactory/proj-ccrc-helm-local/eric-ccrc-1.15.0-1.tgz
+#pcf=https://arm.epk.ericsson.se/artifactory/proj-5g-udm-dev2-helm/eric-pcf-0.27.0.tgz
+udr=https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-renegadedb-helm-helm/eric-udr-release-1.7.19.tgz
+sm=https://arm.lmera.ericsson.se/artifactory/proj-5g-udm-release-helm/eric-udm-mesh-integration-1.100.3+1.tgz
+adp=https://arm.lmera.ericsson.se/artifactory/proj-5g-udm-release-helm/eric-adp-5g-udm-1.101.1+1.tgz
+udm=https://arm.lmera.ericsson.se/artifactory/proj-5g-udm-release-helm/eric-ccsm-udm-1.7.2-3.tgz
+ausf=https://arm.lmera.ericsson.se/artifactory/proj-5g-udm-release-helm/eric-ccsm-ausf-1.7.2-5.tgz
+ccsm=https://arm.lmera.ericsson.se/artifactory/proj-5g-udm-release-helm/eric-ccsm-1.25.1+1.tgz
+crd_sm=https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-all-helm/eric-mesh-controller-crd/eric-mesh-controller-crd-12.3.0+14.tgz
+crd_certm=https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-released-helm/eric-sec-certm-crd/eric-sec-certm-crd-5.0.0+18.tgz
+crd_sip_tls=https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-released-helm/eric-sec-sip-tls-crd/eric-sec-sip-tls-crd-5.0.0+29.tgz
+crd_iccr=https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-ic-cr-released-helm/eric-tm-ingress-controller-cr-crd/eric-tm-ingress-controller-cr-crd-11.3.0+59.tgz
+crd_kvdb=https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-all-helm/eric-data-kvdb-ag-crd/eric-data-kvdb-ag-crd-9.0.0+1.tgz
+crd_nfc=https://arm.seli.gic.ericsson.se/artifactory/proj-5g-udm-dev-helm/eric-ccsm-nfcontroller-crd-1.57.0-1.tgz
+crd_iam=https://arm.sero.gic.ericsson.se/artifactory/proj-adp-sec-release-helm-local/eric-sec-access-mgmt-crd/eric-sec-access-mgmt-crd-1.1.0+1.tgz
+crd_wcdc=https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-all-helm/eric-data-wide-column-database-cd-crd/eric-data-wide-column-database-cd-crd-1.23.0+30.tgz

@@ -1,0 +1,96 @@
+@Library("PipelineGlobalLibrary") _
+import com.ericsson.ci.mason.Mason2
+
+def _project = "5gcicd/integration-service-mesh"
+def _unit = "adp"
+def _credentials = "userpwd-adp"
+def _branch = "master"
+def _refspec = ""
+def _gerrit_user = ""
+def _gerrit_pass = ""
+def _arm_token = ""
+def _cloud = "eccd-ans-udm19165"
+def repoInternalHelmUrl = ""
+def repoDropHelmUrl = ""
+def repoReleaseHelmUrl = ""
+def _VERSION_STRATEGY = "PATCH"
+def _CHART_NAME = ""
+def _CHART_VERSION = ""
+def _CHART_REPO = ""
+def _ALWAYS_RELEASE = "False"
+def _CHART_PATH="eric-udm-mesh-integration"
+
+if (System.getenv("JENKINS_HOME")) { // Jenkins execution
+    _branch = params.GERRIT_BRANCH?: 'master'
+    _refspec = params.GERRIT_REFSPEC?: ''
+    _cloud = params.CLOUD?: _cloud
+    _CHART_NAME = params.CHART_NAME?'eric-mesh-controller,eric-mesh-gateways':''
+    _CHART_VERSION = params.CHART_VERSION?"${params.CHART_VERSION},${params.CHART_VERSION}":''
+    _CHART_REPO = params.CHART_REPO?'https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/,https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/':''
+    _ALWAYS_RELEASE = params.ALWAYS_RELEASE?: 'False'
+    repoInternalHelmUrl = common.getArmHelmRepo('integrationtest', 'internal')[1]
+    repoDropHelmUrl = common.getArmHelmRepo('integrationtest', 'drop')[1]
+    repoReleaseHelmUrl = common.getArmHelmRepo('integrationtest', 'release')[1]
+    // Import Gerrit credentials
+    withCredentials([usernamePassword(credentialsId: "${_credentials}",
+                                      passwordVariable: "GERRIT_PASS",
+                                      usernameVariable: "GERRIT_USER")
+                    ]){
+        _gerrit_user = GERRIT_USER
+        _gerrit_pass = GERRIT_PASS
+    }
+
+   withCredentials([usernamePassword(credentialsId: "arm-seli-identity-token-adp",
+                                      usernameVariable: "ARM_USER",
+                                      passwordVariable: "ARM_TOKEN")
+                    ]){
+        _arm_token = ARM_TOKEN
+    }
+} else { // Local Execution
+        _gerrit_user = ''       // Assign value to this credential locally
+        _gerrit_pass = ''       // Assign value to this credential locally
+        _arm_token = ''   // Assign value to this credential locally
+}
+
+def result = Mason2.ciPipeline(this) {
+    additionalData("product", 'UNIV')
+    additionalData("cl_pipeline", 'CLe0')
+    additionalData("owner_name": 'UNIV')
+    additionalData("owner_email": 'PDLUDM5GIN@pdl.internal.ericsson.com')
+    additionalData("artifact_name", 'adp-service-mesh')
+    cloud(_cloud)
+    parallel(false)
+    unit(_unit)
+    integration{
+        prepare ("Service-mesh-prepare"){
+            env('PLUS_RELEASE_MODE', 'true')
+            env('VERSION_STEP_STRATEGY_MANUAL', "PATCH")
+            env('VERSION_STEP_STRATEGY_DEPENDENCY', "PATCH")
+            gerritUsername(_gerrit_user)
+            gerritPassword(_gerrit_pass)
+            gerritRefspec(_refspec)
+            armApiToken(_arm_token)
+            configFile('helm_credentials_adp_prepare')
+            gitRepoUrl("https://gerrit-gamma.gic.ericsson.se/a/${_project}")
+            gitBranch(_branch)
+            chartName(_CHART_NAME)
+            chartRepo(_CHART_REPO)
+            chartVersion(_CHART_VERSION)
+            release(_ALWAYS_RELEASE.toBoolean())
+            chartPath(_CHART_PATH)
+            helmVersion("true")
+            helmInternalRepo(repoInternalHelmUrl)
+            helmDropRepo(repoDropHelmUrl)
+            helmReleasedRepo(repoReleaseHelmUrl)
+            credentials(_credentials)
+            useCihelm(true)
+        }
+    }
+    jenkins {
+        dsl("archive-artifacts"){
+            cmd {
+                archiveArtifacts(allowEmptyArchive: true, artifacts: 'artifact.properties', onlyIfSuccessful: true)
+            }
+        }
+    }
+}

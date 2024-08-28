@@ -1,0 +1,4 @@
+global:
+  registry:
+    url: armdocker.rnd.ericsson.se
+    pullSecret: armdocker

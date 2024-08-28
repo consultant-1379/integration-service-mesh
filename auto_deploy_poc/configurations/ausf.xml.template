@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+   <capabilities>
+       <capability>
+           urn:ietf:params:netconf:base:1.0
+       </capability>
+   </capabilities>
+</hello>
+]]>]]>
+
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="0">
+          <edit-config>
+              <target>
+                  <running />
+              </target>
+              <config xmlns:xc="urn:ietf:params:xml:ns:netconf:base:1.0">
+                  <ausf xmlns="urn:rdns:com:ericsson:oammodel:ericsson-ausf">
+                      <ausf-engine>
+                          <session-timer>5</session-timer>
+                          <retry-number>2</retry-number>
+                          <udm-url>http://${NODE_IP}:${UDM_PORT}/nudm-ueau/v1</udm-url>
+                      </ausf-engine>
+                      <nf-profile>
+                          <instance-id>0c765084-9cc5-49c6-9876-ae2f5fa2a63f</instance-id>
+                          <requested-status>registered</requested-status>
+                          <plmn-id>
+                              <mcc>111</mcc>
+                              <mnc>222</mnc>
+                          </plmn-id> 
+                          <plmn-id>
+                              <mcc>240</mcc>
+                              <mnc>81</mnc>
+                          </plmn-id>
+                          <plmn-id>
+                              <mcc>240</mcc>
+                              <mnc>82</mnc>
+                          </plmn-id>
+                          <plmn-id>
+                              <mcc>460</mcc>
+                              <mnc>000</mnc>
+                          </plmn-id>
+                          <ipv4-address>${NODE_IP}</ipv4-address>
+                          <priority>0</priority>
+                          <capacity>0</capacity>
+                          <snssai><id>1</id><sst>0</sst><sd>abAB01</sd></snssai> 
+                          <ausf-info>
+                              <group-id>groupid-000001</group-id>
+                              <supi-range>
+                                  <id>1</id>
+                                  <supi-start>240810000000001</supi-start>
+                                  <supi-end>240819999999999</supi-end>
+                              </supi-range>
+                              <routing-indicator>0000</routing-indicator>
+                          </ausf-info>
+                          <service>
+                              <instance-id>nausf-auth-01</instance-id>
+                              <name>nausf-auth</name>
+                              <scheme>http</scheme>
+			      <requested-status>registered</requested-status>
+                              <ip-endpoint>
+                                  <id>1</id>
+				  <ipv4-address>${NODE_IP}</ipv4-address>
+                                  <port>${AUSF_PORT}</port>
+                              </ip-endpoint>
+                              <allowed-plmn>
+                                  <mcc>460</mcc>
+                                  <mnc>000</mnc>
+			      </allowed-plmn>
+                              <allowed-plmn>
+                                  <mcc>111</mcc>
+                                  <mnc>222</mnc>
+                              </allowed-plmn>
+                              <allowed-nf-type>amf</allowed-nf-type>
+                              <capacity>100</capacity>
+                          </service>
+                      </nf-profile>
+                  </ausf>
+              </config>
+          </edit-config>
+      </rpc>
+<close-session/>

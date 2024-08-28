@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  generation: 1
+  name: eric-act-ccdm-prov-ingress
+spec:
+  gateways:
+  - eric-eda-provisioning-gw
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /mapi
+    route:
+    - destination:
+        host: eric-act-mapi-provisioning
+        port:
+          number: 8282
+  - match:
+    - uri:
+        prefix: /oauth
+    route:
+    - destination:
+        host: eric-act-aaa
+        port:
+          number: 8282

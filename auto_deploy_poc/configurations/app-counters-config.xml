@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"><capabilities><capability>urn:ietf:params:netconf:base:1.0</capability></capabilities></hello>
+]]>]]>
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:ns2="urn:ietf:params:xml:ns:netconf:notification:1.0" message-id="19">
+  <edit-config>
+    <target>
+      <running/>
+    </target>
+    <default-operation>merge</default-operation>
+    <test-option>test-then-set</test-option>
+    <error-option>stop-on-error</error-option>
+    <config>
+      <udr-application-counters xmlns="urn:rdns:com:ericsson:oammodel:ericsson-app-counters-udr">
+        <active-site>1</active-site>
+      </udr-application-counters>
+    </config>
+  </edit-config>
+</rpc>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <capabilities>
+        <capability>urn:ietf:params:netconf:base:1.0</capability>
+        <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+        <capability>urn:ietf:params:netconf:capability:rollback-on-error:1.0</capability>
+    </capabilities>
+</hello>
+]]>]]>
+
+<rpc message-id="1"
+    xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <action xmlns="urn:ietf:params:xml:ns:yang:1"
+        xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+        <keystore xmlns="urn:ietf:params:xml:ns:yang:ietf-keystore">
+            <asymmetric-keys>
+                <install-asymmetric-key-pkcs12 xmlns="urn:rdns:com:ericsson:oammodel:ericsson-keystore-ext">
+                    <name>iccr-external-tls-key</name>
+                    <certificate-name>iccr-external-tls-certificate</certificate-name>
+                                        <p12>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
+					</p12>
+                    <p12-password>ericsson</p12-password>
+                </install-asymmetric-key-pkcs12>
+            </asymmetric-keys>
+        </keystore>
+    </action>
+</rpc>
+]]>]]>

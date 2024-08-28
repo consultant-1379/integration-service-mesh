@@ -1,0 +1,67 @@
+global:
+  registry:
+    url: armdocker.rnd.ericsson.se
+    pullSecret: armdocker
+  nssf:
+    istio:
+      traffic_ingressGatewayHTTPPort: 83
+
+eric-data-kvdb-ag:
+  persistence:
+    data:
+      persistentVolumeClaim:
+        storageClassName: erikube-rbd
+    backup:
+      persistentVolumeClaim:
+        storageClassName: erikube-rbd
+  replicas:
+    locator: 1
+    server: 1
+
+  probing:
+    readiness:
+      initialDelaySeconds: 40
+      timeoutSeconds: 3
+      adminMgr:
+        timeoutSeconds: 3
+    liveness:
+      database:
+        initialDelaySeconds: 90
+      monitor:
+        initialDelaySeconds: 90
+      jmxExporter:
+        initialDelaySeconds: 90
+
+  requests:
+    initDepend:
+      cpu: 0
+      memory: 0
+    initDb:
+      cpu: 0
+      memory: 0
+    database:
+      locator:
+        cpu: 0
+        memory: 0
+      server:
+        cpu: 0
+        memory: 0
+    monitor:
+      cpu: 0
+      memory: 0
+    jmxExporter:
+      cpu: 0
+      memory: 0
+    adminMgr:
+      cpu: 0
+      memory: 0
+
+  jvmHeap:
+    initDepend: 100m
+    database:
+      locator: 512m
+      server: 512m
+    monitor: 512m
+    jmxExporter: 128m
+    adminMgr: 512m
+

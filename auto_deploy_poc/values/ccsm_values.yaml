@@ -1,0 +1,97 @@
+eric-ccsm-adp:
+  enabled: false
+eric-ccsm-autonrf:
+  enabled: false
+eric-ccsm-coredumps:
+  enabled: false
+eric-ccsm-eir:
+  enabled: false
+eric-ccsm-hssepc:
+  enabled: false
+eric-ccsm-hss:
+  enabled: false
+eric-ccsm-hssims:
+  enabled: false
+eric-ccsm-mapproxy:
+  enabled: false
+eric-ccsm-smsengine:
+  enabled: false
+global:
+  profiles:
+    small-system:
+      enabled: true
+    std-system:
+      enabled: false
+    cleartext:
+      enabled: true
+    mtls:
+      enabled: false
+    ipv4:
+      enabled: true
+    ipv6:
+      enabled: false
+  internalMtls:
+    enabled: "off"
+  nrfagent:
+    enabled: false
+    nfprofile:
+      name: 2c765011-3cc5-49c6-9876-ae2f5fa2a63f
+  istio:
+    ingress:
+      udmGateway:
+        ports:
+        - name: http2-clear
+          port: 81
+          protocol: HTTP2
+          mode: DISABLE
+          hosts:
+            - "*"
+      udmHssGateway:
+        ports:
+        - port: 82
+          name: http-clear
+          protocol: HTTP
+          hosts:
+            - "*"
+      nrfAgentInternalGateway:
+        ports:
+          - port: 8085
+            name: http2-clear
+            protocol: HTTP2
+            mode: DISABLE
+            hosts:
+              - "*"
+    egress:
+      enabled: true
+  resources:
+    enabled: "off"
+  vtapagent:
+    enabled: false
+
+networkPolicy:
+  enabled: false
+
+eric-ccsm-ausf:
+  istio:
+    ingress:
+      ausfGateway:
+        portsCleartext:
+        - name: http2-clear
+          port: 8084
+          protocol: HTTP2
+          mode: DISABLE
+          hosts:
+            - "./*"
+
+eric-ccsm-lmagent:
+  global:
+    adp:
+      lm:
+        endpoint: "eric-lm-server-ccsm:18326"
+
+eric-ccsm-datainjector:
+  main:
+    jobPostInstall:
+      job:
+        retries: 12
+        timeout: 2400

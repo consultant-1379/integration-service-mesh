@@ -1,0 +1,16 @@
+Thank you for installing ADP Service Mesh
+
+Your release is named {{ .Release.Name }}.
+
+Please following the following guide to get sidecar injected for your application Pods:
+
+1. Label namespace that application object will be deployed to by the following command (take default namespace as an example)
+
+$ kubectl label namespace default istio-injection=enabled
+
+# One more command for multiTenancy=true
+$ kubectl label namespace <namespace> eric-inject-ns=<namespace>
+
+2. Add sidecar.istio.io/inject: "true" annotation in the pod template spec’s metadata
+
+3. Deploy your applications

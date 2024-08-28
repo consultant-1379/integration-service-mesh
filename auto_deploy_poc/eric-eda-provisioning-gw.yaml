@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Tiller
+  name: eric-eda-provisioning-gw
+  selfLink: /apis/networking.istio.io/v1alpha3/namespaces/ccdm/gateways/eric-eda-provisioning-gw
+spec:
+  selector:
+    istio: eric-eda-provisioning
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http2-clear
+      number: 80
+      protocol: HTTP2

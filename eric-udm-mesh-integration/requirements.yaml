@@ -1,0 +1,149 @@
+dependencies:
+  # NOTE!!! When the Service Mesh version is uplifted, please remember for now
+  # to update also the global.istio.annotations.serviceMesh variable with the
+  # correct version at:
+  # https://gerrit-gamma-read.seli.gic.ericsson.se/plugins/gitiles/5gcicd/integration/+/refs/heads/master/eric-adp-5g-udm/helm/values.yaml
+  - name: eric-mesh-controller
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-mesh-controller.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-udr-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-udr-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-udm-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-udm-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-ausf-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-ausf-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nef-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nef-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-udr-ldap-provisioning
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-udr-ldap-provisioning.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-udr-ldap-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-udr-ldap-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-hss-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-hss-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-eir-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-eir-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-udr-intersite
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-udr-intersite.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-eda-provisioning
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-eda-provisioning.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nef-nbi-trust-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nef-nbi-trust-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nef-nbi-non-trust-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nef-nbi-non-trust-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nef-provisioning-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nef-provisioning-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nef-sbi-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nef-sbi-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nef-oam-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nef-oam-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-udm-internal-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-udm-internal-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-epc-soap-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-epc-soap-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-cces-ue-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-cces-ue-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-hss-epc-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-hss-epc-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-ims-soap-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-ims-soap-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-cces-ewi-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-cces-ewi-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-cces-nbi-heartbeat-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-cces-nbi-heartbeat-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-cces-capif1-trust-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-cces-capif1-trust-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-cces-capif1-non-trust-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-cces-capif1-non-trust-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nrfagent-internal-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-nrfagent-internal-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nrf-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: global.eric_nrf.enabled,eric-ingressgw-nrf-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-nssf-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: global.eric_nssf.enabled,eric-ingressgw-nssf-traffic.enabled
+  - name: eric-mesh-gateways
+    alias: eric-ingressgw-cces-2nd-nbi-hb-traffic
+    version: 13.0.0+50
+    repository: https://arm.rnd.ki.sw.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    condition: eric-ingressgw-cces-2nd-nbi-hb-traffic.enabled 

@@ -1,0 +1,149 @@
+global:
+  proxy:
+    includeIPRanges: ""
+  jwtPolicy: first-party-jwt
+eric-ingressgw-udr-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  enabled: true
+  daemonSet: false
+  ports:
+    http2-clear:
+      port: 80
+      targetPort: 8080
+      name: http2-clear
+eric-ingressgw-udm-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  labels:
+    istiox: eric-udm-traffic
+  enabled: true
+  daemonSet: false
+  autoScaling:
+    enabled: false
+  ports:
+  - name: http2
+    port: 81 
+    targetPort: 8081
+eric-ingressgw-ausf-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  labels:
+    istiox: eric-ausf-traffic
+  enabled: true
+  daemonSet: false
+  ports:
+  - name: http2
+    port: 84
+    targetPort: 8084
+eric-ingressgw-nef-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  labels:
+    istiox: eric-nef-traffic
+  enabled: true
+  daemonSet: false
+  ports:
+  - name: http2
+    port: 86
+    targetPort: 8086
+eric-ingressgw-udr-ldap-provisioning:
+  service:
+    allocateLoadBalancerNodePorts: true
+  enabled: true
+  daemonSet: false
+  ports:
+    tcp-ldap:
+      port: 389
+      targetPort: 8389
+      name: tcp
+      protocol: TCP
+eric-ingressgw-udr-ldap-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  enabled: true
+  daemonSet: false
+  ports:
+    tcp-ldap:
+      port: 389
+      targetPort: 8389
+      name: tcp
+      protocol: TCP
+eric-ingressgw-udr-intersite:
+  service:
+    allocateLoadBalancerNodePorts: true
+  enabled: true
+  daemonSet: false
+  ports:
+    http2-clear:
+      port: 80
+      targetPort: 8080
+      name: http2-clear
+    https-mtls:
+      port: 443
+      targetPort: 8443
+      name: https-mtls
+    tcp-kvdb-loc:
+      name: locator
+      port: 10334
+      targetPort: 10334
+    tcp-kvdb-recv:
+      name: receiver
+      port: 31000
+      targetPort: 31000
+    tcp-zookeeper:
+      name: tcp-zookeeper
+      port: 2181
+      targetPort: 2181
+    tcp-ldap-proxy:
+      name: tcp-ldap-proxy
+      port: 389
+      targetPort: 8389
+eric-ingressgw-eda-provisioning:
+  service:
+    allocateLoadBalancerNodePorts: true
+  enabled: true
+  daemonSet: false
+  replicaCount: 4
+  #concurrency: 2
+  autoScaling:
+    enabled: false
+  ports:
+    http2-clear:
+      port: 80
+      targetPort: 8080
+      name: http2-clear
+    https-mtls:
+      port: 443
+      targetPort: 8443
+      name: https-mtls
+eric-ingressgw-nrf-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  labels:
+    istiox: eric-nrf-traffic
+  enabled: true
+  daemonSet: false
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http2
+  - port: 91
+    targetPort: 8091
+    name: geode-locators
+    protocol: TCP
+  - port: 92
+    targetPort: 8092
+    name: geode-gw-rcvs
+    protocol: TCP
+eric-ingressgw-nssf-traffic:
+  service:
+    allocateLoadBalancerNodePorts: true
+  labels:
+    istiox: eric-nssf-traffic
+  enabled: true
+  daemonSet: false
+  ports:
+  - name: http2
+    port: 83
+    targetPort: 8083

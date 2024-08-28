@@ -1,0 +1,139 @@
+global:
+  domainName: testseli.gic.ericsson.se
+  clusterName: testcluster
+  nodeSelector: {}
+  activation:
+    ipv6: false
+    cassandra:
+      nodes: eric-data-wide-column-database-cd-0.eric-data-wide-column-database-cd
+      replication: 1
+      consistencylevel: ONE
+    service:
+      allowInsecure: true
+  registry:
+    pullSecret: armdocker
+    url: armdocker.rnd.ericsson.se
+
+eric-act-aaa:
+  misc:
+    replicaCount: 2
+  aaa:
+    jobs:
+      # timeout for pre-install hook
+      activeDeadlineSeconds: "1200"
+
+eric-act-mapi-provisioning:
+  misc:
+    replicaCount: 2
+
+eric-act-user-data-activator:
+  uda:
+    config:
+      lm_address: "eric-lm-combined-server-ccdm"
+    misc:
+      replicaCount: 2
+      synchronizerCount: 2
+
+eric-act-proclog-cassandra-stasher:
+  misc:
+    proclog_stasher:
+      replicaCount: 1
+
+eric-act-proclog-manager:
+  misc:
+    replicaCount: 2
+  config:
+    proclog_days_retained: 1
+
+eric-act-service-locator-registry:
+  misc:
+    replicaCount: 2
+
+eric-data-wide-column-database-cd:
+  persistence:
+    storageClass: erikube-rbd
+    storageClassName: erikube-rbd
+    volumeSize: 8G
+  # ip protocol stack mode ipv6: true or false
+  resources:
+    cassandra:
+      requests:
+        cpu: "4000m"
+        memory: "8G"
+      limits:
+        cpu: "99999m"
+        memory: "10G"
+      heap:
+        size: "4G"
+      network:
+        useIPv6: false
+  nodeSelector:
+    bra: {}
+    authJob: {}
+    cassandra: {}
+  brAgent:
+    enabled: false
+
+eric-act-log-transformer:
+  nodeSelector: {}
+  replicaCount: 1
+  global:
+    security:
+      tls:
+        enabled: false
+
+eric-act-mb-kf:
+  persistentVolumeClaim:
+    storageClassName: erikube-rbd
+  replicas: 3
+
+eric-act-application-monitor:
+  # Override servicesToMonitor because eric-data-wide-column-database-cd-bra is disabled in order to save resource
+  # Otherwise there's warning flushing in eric-act-application-monitor which will fail log test case(log from eda
+  # doesn't have kubernetes metadata
+  servicesToMonitor:
+    services:
+    ## ADP Services
+    #- name: eric-data-wide-column-database-cd-bra
+    #  type: deployment
+    - name: eric-data-wide-column-database-cd
+      type: statefulset
+    - name: eric-udm-authprovvalidator
+      type: deployment
+    - name: eric-udm-udmprovisioningvalidator
+      type: deployment
+    - name: eric-lm-combined-server-license-consumer-handler
+      type: deployment
+    - name: eric-lm-combined-server-license-server-client
+      type: deployment
+    ## EDA Services
+    - name: eric-act-aaa
+      type: deployment
+    - name: eric-act-application-monitor
+      type: deployment
+    - name: eric-act-log-transformer
+      type: deployment
+    - name: eric-act-mapi-provisioning
+      type: deployment
+    - name: eric-act-mb-kf
+      type: statefulset
+    - name: eric-act-proclog-cassandra-stasher
+      type: deployment
+    - name: eric-act-proclog-manager
+      type: deployment
+    - name: eric-act-service-locator-registry
+      type: statefulset
+    - name: eric-act-user-data-activator
+      type: deployment
+    - name: eric-act-user-data-activator-synchronizer
+      type: statefulset
+
+oam:
+  httpProxy:
+    class: "ccdm"
+    prefix: "oam."
+    secret: "iccr-external-tls-secret"
+
+prov:
+  virtualService:
+    gatewayName: eric-eda-provisioning-gw

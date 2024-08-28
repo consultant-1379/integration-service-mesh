@@ -1,0 +1,67 @@
+tags:
+  eric-adp-common: false
+  eric-data-document-database-pg: false
+  eric-cm-mediator: false
+  eric-pm-server: false
+  eric-pm-bulk-reporter: false
+  eric-data-coordinator-zk: false
+  eric-data-message-bus-kf: false
+  eric-log-shipper: false
+  eric-data-search-engine: false
+  eric-fh-alarm-handler: false
+  eric-fh-snmp-alarm-provider: false
+  eric-cm-yang-provider: false
+  eric-data-search-engine-curator: false
+  eric-odca-diagnostic-data-collector: false
+  eric-log-transformer: false
+  eric-ctrl-bro: false
+  eric-sec-ldap-server: false
+  eric-sec-key-management: false
+  eric-sec-sip-tls: false
+  eric-data-distributed-coordinator-ed: false
+  eric-cnom-server: false
+  eric-tm-ingress-controller-cr: false
+  eric-lm-combined-server: true
+  eric-sec-certm: false
+  eric-lm-unique-object-reporter: false
+  eric-sec-access-mgmt: false
+  eric-sec-admin-user-management: false
+  eric-data-object-storage-mn: false
+  eric-si-application-sys-info-handler: false
+  eric-pm-resource-monitor: false
+  eric-probe-virtual-tap-broker: false
+
+global:
+  ericsson:
+    licensing:
+      licenseDomains:
+        - productType: "CCDM"
+          customerId: "800141"
+          swltId: "STB-CCDM-14"
+  createExternalCertificateCR: false
+  istio:
+    bootstrapOverride: false
+
+eric-lm-combined-server:
+  database:
+    host: eric-data-document-database-pg-lm
+    name: adp_gs_lm_ccdm
+  nameOverride: eric-lm-server-ccdm
+  licenseServerClient:
+    licenseServer:
+      thrift: 
+        host: "10.155.142.69"
+  licenseConsumerHandler:
+    replicaCount: 1
+  replicaCount:
+    licenseConsumerHandler: 1
+  service:
+    endpoints:
+      licenseConsumerHandler:
+        restapi:
+          tls:
+            enforced: optional
+            verifyClientCertificate: optional
+
+eric-pm-resource-monitor:
+  enabled: false

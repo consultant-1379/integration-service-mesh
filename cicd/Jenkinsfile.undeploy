@@ -1,0 +1,66 @@
+@Library("PipelineGlobalLibrary") _
+import com.ericsson.ci.mason.Mason2
+
+def _project = "5gcicd/integration-service-mesh"
+def _unit = "adp"
+def _credentials = "userpwd-adp"
+def _branch = "master"
+def _refspec = ""
+def _gerrit_user = ""
+def _gerrit_pass = ""
+def _cloud = "eccd-ans-udm19165"
+
+if ( System.getenv("JENKINS_HOME")) { // Jenkins execution
+    _branch = params.GERRIT_BRANCH?: 'master'
+    if( params.GERRIT_REFSPEC == ''){
+        _refspec = 'master'
+    }else{
+        _refspec = params.GERRIT_REFSPEC
+    }
+    _cloud = params.CLOUD?: _cloud
+    // Import Gerrit credentials
+    withCredentials([usernamePassword(credentialsId: "${_credentials}",
+                                      usernameVariable: "GERRIT_USER",
+                                      passwordVariable: "GERRIT_PASS")
+                    ]){
+        _gerrit_user = GERRIT_USER
+        _gerrit_pass = GERRIT_PASS
+    }
+
+} else { // Local Execution
+        _gerrit_user = ''       // Assign value to this credential locally
+        _gerrit_pass = ''       // Assign value to this credential locally
+}
+
+def result = Mason2.ciPipeline(this) {
+    cloud(_cloud)
+    parallel(false)
+    unit(_unit)
+    checkout {
+        gerrit("checkout") {
+            project(_project)
+            credentials(_credentials)
+            branch(_branch)
+            refspec(_refspec)
+            advancedsubopts {
+                recursiveupdate(true)
+                useparentcreds(true)
+                timeout(20)
+            }
+            cleanbeforecheckout()
+            advancedcheckout() {
+                timeout(40)
+            }
+            strategybuild {
+                strategy("GERRIT")
+            }
+        }
+    }
+    script {
+        shell("undeploy-solution") {
+            container('adp-common-utils','armdocker.rnd.ericsson.se/proj-5g-cicd-release/tools/adp-common-utils', '2.16.1', true)
+            dir("auto_deploy_poc")
+            cmd("bash -x undeploy_solution.sh")
+        }
+    }
+}

@@ -1,0 +1,406 @@
+global:
+  serviceNames:
+    licenseManager: eric-lm-combined-server-ccdm
+  ipStackMode: ipv4
+  istio:
+    egress:
+      enabled: false
+            
+eric-udr-cmagent:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+eric-udr-soap-notifchecker:
+  app:
+    logging: DEBUG
+  maxReplica: 2
+  minReplica: 2
+  resources:
+    limits:
+      cpu: 800m
+      memory: 700Mi
+    requests:
+      cpu: 500m
+      memory: 700Mi
+
+eric-udr-soap-notifsender:
+  app:
+    logging: DEBUG
+  maxReplica: 10
+  minReplica: 2
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2048Mi
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+
+eric-udr-rest-notifchecker:
+  app:
+    logging: DEBUG
+  maxReplica: 10
+  minReplica: 2
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+eric-udr-rest-notifsender:
+  app:
+    logging: DEBUG
+  maxReplica: 10
+  minReplica: 2
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+eric-udr-nrfproxy:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+eric-udr-backuprestore:
+  persistence:
+    storageClass: erikube-rbd
+  requests:
+    orchestrator:
+      cpu: 100m
+      memory: 1Gi
+  limits:
+    orchestrator:
+      cpu: 100m
+      memory: 1Gi
+
+eric-udr-ldap-balancer:
+  balancer:
+    tuning:
+      bindconns: 10
+      max_pending_cons: 20
+      max_pending_ops: 40
+      numconns: 2
+  deploy:
+    maxReplica: 3
+    minReplica: 2
+  eric_udr_ldap_balancer_monitor:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  ldapExporter:
+    resources:
+      limits:
+        cpu: 300m
+        memory: 400Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+  syslog:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 100Mi
+
+eric-udr-ldapfe:
+  conf:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 50Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+  ldapExporter:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 300Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  queryRouter:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 300Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+  service:
+    maxReplica: 3
+    minReplica: 2
+  syslog:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 300Mi
+      requests:
+        cpu: 50m
+        memory: 100Mi
+
+eric-udr-nudrsvc:
+  app:
+    logging: DEBUG
+    loggingGeode: debug
+    loggingNudrfe: DEBUG
+  maxReplica: 3
+  minReplica: 2
+  resources:
+    httpProxy:
+      limits:
+        cpu: 1000m
+        memory: 400Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    httpProxyCfgProvider:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    jvm:
+      maxheapmemory: 1200m
+    nudrfe:
+      limits:
+        cpu: 2000m
+        memory: 1600Mi
+      requests:
+        cpu: 50m
+        memory: 1600Mi
+    queryRouter:
+      limits:
+        cpu: 1000m
+        memory: 300Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+eric-udr-system-monitor:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 500m
+      memory: 768Mi
+
+eric-udr-system-status-provider:
+  app:
+    logging: DEBUG
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1000Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+eric-udr-message-bus-monitor:
+  resources:
+    messageBusMonitor:
+      limits:
+        cpu: 500m
+        memory: 1024Mi
+      requests:
+        cpu: 250m
+        memory: 768Mi
+
+eric-udr-dbmonitor:
+  global:
+    egress:
+      enabled: true
+  app:
+    logging: DEBUG
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+eric-udr-dbmanager:
+  app:
+    logging: DEBUG
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 500m
+      memory: 768Mi
+
+eric-udr-data-model-controller:
+  jvm:
+    maxheapmemory: 1500m
+    startheapmemory: 256m
+  resources:
+    limits:
+      cpu: 500m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+eric-udr-provisioningfe:
+  app:
+    loggingGeode: debug
+    loggingProvisioningfe: DEBUG
+  istio:
+    gateway:
+      enabled: false
+      name: eric-udr-intersite-gw
+    virtualservice:
+      enabled: true
+  resources:
+    httpProxy:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 256Mi
+    httpProxyCfgProvider:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 256Mi
+    overloadMonitor:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+    provisioningfe:
+      limits:
+        cpu: 4
+        memory: 4Gi
+      requests:
+        cpu: 500m
+        memory: 4Gi
+    queryRouter:
+      limits:
+        cpu: 2
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    statsDExporter:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+eric-udr-notificationsubscription:
+  app:
+    logging: DEBUG
+  maxReplica: 1
+  minReplica: 1
+  resources:
+    httpProxy:
+      limits:
+        cpu: 2
+        memory: 512Mi
+      requests:
+        cpu: 800m
+        memory: 256Mi
+    httpProxyCfgProvider:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 256Mi
+    notificationSubscription:
+      limits:
+        cpu: 4
+        memory: 2048Mi
+      requests:
+        cpu: 1500m
+        memory: 768Mi
+    overloadMonitor:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+    queryRouter:
+      limits:
+        cpu: 3
+        memory: 512Mi
+      requests:
+        cpu: 800m
+        memory: 256Mi
+    statsDExporter:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+  targetCPUUtilizationPercentage: 90
+  service:
+    logging:
+      queryRouter: debug
+
+eric-data-message-bus-kf:
+  persistence:
+    persistentVolumeClaim:
+      storageClassName: erikube-rbd
+      enabled: true
+      storage: "15Gi"
+  persistentVolumeClaim:
+    enabled: false
+  resources:
+    messagebuskf:
+      limits:
+        cpu: 2000m
+        memory: 6Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi

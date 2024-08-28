@@ -1,0 +1,580 @@
+tags:
+  eric-adp: false
+  eric-udr: true
+  eric-act-ccdm: true
+  eric-nrfagent: false
+  # udr
+  eric-udr-preinstall: false
+  # adp commons message bus
+  eric-data-message-bus-kf: false
+  eric-lm-combined-server: false
+  eric-sec-access-mgmt: false
+
+global:
+  profiles:
+    small-telco:
+      enabled: true
+    std-telco:
+      enabled: false
+    cleartext:
+      enabled: true
+    mtls:
+      enabled: false
+  domainName: testseli.gic.ericsson.se
+  clusterName: testcluster
+  nodeSelector: {}
+  tapagent:
+    enabled: false
+  activation:
+    ipv6: false
+    cassandra:
+      nodes: eric-data-wide-column-database-cd-0.eric-data-wide-column-database-cd
+      replication: 1
+      consistencylevel: ONE
+    service:
+      allowInsecure: true
+    lm:
+      lm_address: "eric-lm-server-ccdm"
+    tls:
+      internalCa: "eric-act-service-locator-registry-acs-ca-tls"
+    iam:
+      ca: "eric-sec-access-mgmt-iam-client-ca"
+  serviceNames:
+    licenseManager: eric-lm-server-ccdm
+  ipStackMode: ipv4
+  istio:
+    egress:
+      enabled: false
+  registry:
+    url:
+
+networkPolicy:
+  enabled: false
+
+eric-act-ccdm:
+  eric-act-aaa:
+    misc:
+      replicaCount: 2
+    aaa:
+      jobs:
+        # timeout for pre-install hook
+        activeDeadlineSeconds: "1200"
+
+  eric-act-mapi-provisioning:
+    misc:
+      replicaCount: 2
+
+  eric-act-user-data-activator:
+    uda:
+      misc:
+        replicaCount: 2
+        synchronizerCount: 2
+
+  eric-act-proclog-cassandra-stasher:
+    misc:
+      proclog_stasher:
+        replicaCount: 1
+
+  eric-act-proclog-manager:
+    misc:
+      replicaCount: 2
+    config:
+      proclog_days_retained: 1
+
+  eric-act-service-locator-registry:
+    misc:
+      replicaCount: 2
+
+  eric-data-wide-column-database-cd:
+    persistence:
+      dataVolume:
+        persistentVolumeClaim:
+          #storageClass: erikube-rbd
+          storageClassName: erikube-rbd
+          volumeSize: 8G
+    # ip protocol stack mode ipv6: true or false
+    resources:
+      cassandra:
+        requests:
+          cpu: "2000m"
+          memory: "2G"
+        limits:
+          cpu: 10
+          memory: "10G"
+    nodeSelector:
+      bra: {}
+      authJob: {}
+      cassandra: {}
+    brAgent:
+      enabled: false
+    cassandra:
+      jvmOptions:
+        set:
+          - "Dcassandra.commitlog.ignorereplayerrors=true"
+          - "Dcassandra.batch_size_warn_threshold_in_kb=3000kb"
+          - "Dcassandra.batch_size_fail_threshold_in_kb=30000kb"
+          - "Xms1G"
+          - "Xmx1G"
+          - "Xmn400m"
+
+  eric-act-log-transformer:
+    nodeSelector: {}
+    replicaCount: 1
+    global:
+      security:
+        tls:
+          enabled: false
+
+  eric-act-mb-kf:
+    persistence:
+      persistentVolumeClaim:
+        storageClassName: erikube-rbd
+    replicaCount: 3
+
+  eric-act-application-monitor:
+    # Override servicesToMonitor because eric-data-wide-column-database-cd-bra is disabled in order to save resource
+    # Otherwise there's warning flushing in eric-act-application-monitor which will fail log test case(log from eda
+    # doesn't have kubernetes metadata
+    servicesToMonitor:
+      services:
+      ## ADP Services
+      #- name: eric-data-wide-column-database-cd-bra
+      #  type: deployment
+      - name: eric-data-wide-column-database-cd
+        type: statefulset
+      - name: eric-udm-authprovvalidator
+        type: deployment
+      - name: eric-udm-udmprovisioningvalidator
+        type: deployment
+      - name: eric-lm-combined-server-license-consumer-handler
+        type: deployment
+      - name: eric-lm-combined-server-license-server-client
+        type: deployment
+      ## EDA Services
+      - name: eric-act-aaa
+        type: deployment
+      - name: eric-act-application-monitor
+        type: deployment
+      - name: eric-act-log-transformer
+        type: deployment
+      - name: eric-act-mapi-provisioning
+        type: deployment
+      - name: eric-act-mb-kf
+        type: statefulset
+      - name: eric-act-proclog-cassandra-stasher
+        type: deployment
+      - name: eric-act-proclog-manager
+        type: deployment
+      - name: eric-act-service-locator-registry
+        type: statefulset
+      - name: eric-act-user-data-activator
+        type: deployment
+      - name: eric-act-user-data-activator-synchronizer
+        type: statefulset
+
+  oam:
+    httpProxy:
+      class: "ccdm"
+      prefix: "oam."
+      secret: "iccr-external-tls-secret"
+
+  prov:
+    virtualService:
+      gatewayName: eric-eda-provisioning-gw
+
+eric-udr:
+  eric-udr-cmagent:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  eric-udr-soap-notifchecker:
+    app:
+      logging: DEBUG
+    maxReplica: 2
+    minReplica: 2
+    resources:
+      limits:
+        cpu: 800m
+        memory: 700Mi
+      requests:
+        cpu: 500m
+        memory: 700Mi
+
+  eric-udr-soap-notifsender:
+    app:
+      logging: DEBUG
+    maxReplica: 10
+    minReplica: 2
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2048Mi
+      requests:
+        cpu: 500m
+        memory: 1024Mi
+
+  eric-udr-rest-notifchecker:
+    app:
+      logging: DEBUG
+    maxReplica: 10
+    minReplica: 2
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+  eric-udr-rest-notifsender:
+    app:
+      logging: DEBUG
+    maxReplica: 10
+    minReplica: 2
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+  eric-udr-nrfproxy:
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
+  eric-udr-backuprestore:
+    persistence:
+      storageClass: erikube-rbd
+    requests:
+      orchestrator:
+        cpu: 100m
+        memory: 1Gi
+    limits:
+      orchestrator:
+        cpu: 100m
+        memory: 1Gi
+
+  eric-udr-ldap-balancer:
+    balancer:
+      tuning:
+        bindconns: 10
+        max_pending_cons: 20
+        max_pending_ops: 40
+        numconns: 2
+    deploy:
+      maxReplica: 3
+      minReplica: 2
+    eric_udr_ldap_balancer_monitor:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 100Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+    ldapExporter:
+      resources:
+        limits:
+          cpu: 300m
+          memory: 400Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 256Mi
+    syslog:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 100Mi
+        requests:
+          cpu: 50m
+          memory: 100Mi
+
+  eric-udr-ldapfe:
+    conf:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 50Mi
+        requests:
+          cpu: 50m
+          memory: 50Mi
+    ldapExporter:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 300Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    queryRouter:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 300Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    resources:
+      limits:
+        cpu: 1500m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 256Mi
+    service:
+      maxReplica: 3
+      minReplica: 2
+    syslog:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 300Mi
+        requests:
+          cpu: 50m
+          memory: 100Mi
+
+  eric-udr-nudrsvc:
+    maxReplica: 3
+    minReplica: 2
+    resources:
+      httpProxy:
+        limits:
+          cpu: 1300m
+          memory: 600Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
+      httpProxyCfgProvider:
+        limits:
+          cpu: 800m
+          memory: 512Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
+      jvm:
+        maxheapmemory: 1200m
+      nudrfe:
+        limits:
+          cpu: 2000m
+          memory: 1600Mi
+        requests:
+          cpu: 50m
+          memory: 1600Mi
+      queryRouter:
+        limits:
+          cpu: 1000m
+          memory: 300Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+
+  eric-udr-system-monitor:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1024Mi
+      requests:
+        cpu: 500m
+        memory: 768Mi
+
+  eric-udr-system-status-provider:
+    app:
+      logging: DEBUG
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1000Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+
+  eric-udr-message-bus-monitor:
+    resources:
+      messageBusMonitor:
+        limits:
+          cpu: 500m
+          memory: 1024Mi
+        requests:
+          cpu: 250m
+          memory: 768Mi
+
+  eric-udr-dbmonitor:
+    global:
+      egress:
+        enabled: true
+    app:
+      logging: DEBUG
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
+  eric-udr-dbmanager:
+    app:
+      logging: DEBUG
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 500m
+        memory: 768Mi
+
+  eric-udr-data-model-controller:
+    jvm:
+      maxheapmemory: 1500m
+      startheapmemory: 256m
+    resources:
+      limits:
+        cpu: 500m
+        memory: 2Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+  eric-udr-provisioningfe:
+    app:
+      loggingGeode: debug
+      loggingProvisioningfe: DEBUG
+    istio:
+      gateway:
+        enabled: false
+        name: eric-udr-intersite-gw
+      virtualservice:
+        enabled: true
+    resources:
+      httpProxy:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 500m
+          memory: 256Mi
+      httpProxyCfgProvider:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 500m
+          memory: 256Mi
+      overloadMonitor:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
+      provisioningfe:
+        limits:
+          cpu: 4
+          memory: 4Gi
+        requests:
+          cpu: 500m
+          memory: 4Gi
+      queryRouter:
+        limits:
+          cpu: 2
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      statsDExporter:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
+
+  eric-udr-notificationsubscription:
+    app:
+      logging: DEBUG
+    maxReplica: 2
+    minReplica: 2
+    resources:
+      httpProxy:
+        limits:
+          cpu: 2
+          memory: 512Mi
+        requests:
+          cpu: 800m
+          memory: 256Mi
+      httpProxyCfgProvider:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 500m
+          memory: 256Mi
+      notificationSubscription:
+        limits:
+          cpu: 4
+          memory: 2048Mi
+        requests:
+          cpu: 1500m
+          memory: 768Mi
+      overloadMonitor:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
+      queryRouter:
+        limits:
+          cpu: 3
+          memory: 512Mi
+        requests:
+          cpu: 800m
+          memory: 256Mi
+      statsDExporter:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 200m
+          memory: 256Mi
+    targetCPUUtilizationPercentage: 90
+    service:
+      logging:
+        queryRouter: debug
+
+  eric-data-message-bus-kf:
+    persistence:
+      persistentVolumeClaim:
+        storageClassName: erikube-rbd
+        enabled: true
+        storage: "15Gi"
+    persistentVolumeClaim:
+      enabled: false
+    resources:
+      messagebuskf:
+        limits:
+          cpu: 2000m
+          memory: 6Gi
+        requests:
+          cpu: 1000m
+          memory: 1Gi
+

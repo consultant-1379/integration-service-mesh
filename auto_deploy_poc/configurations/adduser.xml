@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"><capabilities><capability>urn:ietf:params:netconf:base:1.0</capability></capabilities></hello>
+]]>]]>
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:ns2="urn:ietf:params:xml:ns:netconf:notification:1.0" message-id="9">
+<edit-config>
+<target>
+<running/>
+</target>
+<default-operation>merge</default-operation>
+<test-option>test-then-set</test-option>
+<error-option>stop-on-error</error-option>
+<config>
+<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
+<authentication>
+<user>
+<name>admin</name>
+<password>EricSson@12-3</password>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">nrf-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">nssf-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">nrfagent-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">udm_admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">udm_sensitive_key_admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">ausf_admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">udr-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">udr-security-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">system-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">nrf-security-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">nssf-security-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">nrfagent-security-admin</groups>
+<groups xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">system-security-admin</groups>
+</user>
+<oauth2-client xmlns="urn:rdns:com:ericsson:oammodel:ericsson-system-ext">
+<client-id>ccdm-client</client-id>
+<client-secret>ccdm-secret</client-secret>
+<groups>scopes.ericsson.com/activation/mapi.read</groups>
+<groups>scopes.ericsson.com/activation/mapi.write</groups>
+</oauth2-client>
+</authentication>
+</system>
+</config>
+</edit-config>
+</rpc>
+

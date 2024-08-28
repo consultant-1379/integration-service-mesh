@@ -1,0 +1,987 @@
+eric-mesh-cni:
+  enabled: false
+
+eric-mesh-certificate-mgr:
+  enabled: false
+
+eric-mesh-sidecar-injector:
+  enabled: false
+
+eric-mesh-controller:
+  enabled: false
+
+eric-mesh-gateways:
+  enabled: true
+  
+  # Note: UDM Default value for daemonSet is true, so autoscaleEnabled is false, and replicaCount is 1
+  # To change to use HPA for auto-scaling, set the daemonSet to false, autoscaleEnabled to true, then 
+  # the replicaCount is meanless.
+  # INGRESS GATEWAYS FOR PROVISIONING
+  eric-nrf-traffic:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false
+  
+    labels:
+      app: ingressgateway
+      istio: eric-nrf-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    #replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31380
+    - port: 91
+      targetPort: 91
+      name: geode-locators
+      protocol: TCP
+      nodePort: 31391
+    - port: 92
+      targetPort: 92
+      name: geode-gateway-receivers
+      protocol: TCP
+      nodePort: 31392
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  eric-udr-traffic:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false
+    labels:
+      app: ingressgateway
+      istio: eric-udr-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31380
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+
+  eric-udm-traffic:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-udm-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 81
+      targetPort: 81
+      name: http2
+      nodePort: 31381
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+  eric-nssf-traffic:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-nssf-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31380
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  eric-ausf-traffic:
+    enabled: false
+    daemonSet: true
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false
+    labels:
+      app: ingressgateway
+      istio: eric-ausf-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31380
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+
+  eric-nrf-agent-traffic:
+    enabled: false
+    daemonSet: false
+    labels:
+      app: ingressgateway
+      istio: eric-nrf-agent-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    serviceAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #VIP: 10.50.0.15
+    ports:
+      ## You can add custom gateway ports
+    - port: 82
+      targetPort: 82
+      name: http2
+      nodePort: 31382
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+
+  eric-nef-traffic:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-nef-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31380
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  eric-pcf-traffic:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-pcf-traffic
+      type: ingress-traffic
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31380
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  # INGRESS GATEWAYS FOR PROVISIONING
+  eric-nrf-provisioning:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-nrf-provisioning
+      type: ingress-provisioning
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31393
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  eric-nssf-provisioning:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-nssf-provisioning
+      type: ingress-provisioning
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31390
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  eric-pcf-provisioning:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-pcf-provisioning
+      type: ingress-provisioning
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 80
+      targetPort: 80
+      name: http2
+      nodePort: 31390
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}
+    
+  eric-udr-provisioning:
+    enabled: false
+    daemonSet: false
+    #
+    # Secret Discovery Service (SDS) configuration for ingress gateway.
+    #
+    sds:
+      # If true, ingress gateway fetches credentials from SDS server to handle TLS connections.
+      enabled: false  
+    labels:
+      app: ingressgateway
+      istio: eric-udr-provisioning
+      type: ingress-provisioning
+    autoscaleEnabled: true
+    autoscaleMin: 1
+    autoscaleMax: 5
+    # specify replicaCount when autoscaleEnabled: false
+    # replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      # Note that AWS ELB will by default perform health checks on the first port
+      # on this list. Setting this to the health check port will ensure that health
+      # checks always work.
+    - port: 15020
+      targetPort: 15020
+      name: status-port
+    - port: 389
+      targetPort: 389
+      name: tcp
+      protocol: TCP
+      nodePort: 31389
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    ### Advanced options ############
+    env:
+      # A gateway with this mode ensures that pilot generates an additional
+      # set of clusters for internal services but without Istio mTLS, to
+      # enable cross cluster routing.
+      ISTIO_META_ROUTER_MODE: "sni-dnat"
+    nodeSelector: {}
+    # Specify the pod anti-affinity that allows you to constrain which nodes
+    # your pod is eligible to be scheduled based on labels on pods that are
+    # already running on the node rather than based on labels on nodes.
+    # There are currently two types of anti-affinity:
+    #    "requiredDuringSchedulingIgnoredDuringExecution"
+    #    "preferredDuringSchedulingIgnoredDuringExecution"
+    # which denote “hard” vs. “soft” requirements, you can define your values
+    # in "podAntiAffinityLabelSelector" and "podAntiAffinityTermLabelSelector"
+    # correspondingly.
+    # For example:
+    # podAntiAffinityLabelSelector:
+    # - key: security
+    #   operator: In
+    #   values: S1,S2
+    #   topologyKey: "kubernetes.io/hostname"
+    # This pod anti-affinity rule says that the pod requires not to be scheduled
+    # onto a node if that node is already running a pod with label having key
+    # “security” and value “S1”.
+    podAntiAffinityLabelSelector: {}
+    podAntiAffinityTermLabelSelector: {}

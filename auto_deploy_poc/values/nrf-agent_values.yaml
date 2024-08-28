@@ -1,0 +1,12 @@
+global:
+  registry:
+    url: armdocker.rnd.ericsson.se
+    pullSecret: armdocker
+  istio:
+    nrfagent_nf_ingressgws:
+    - eric-nssf-traffic-gateway
+    - eric-nrf-traffic-gateway
+    sidecar:
+      inject: false
+    egress:
+      enabled: false

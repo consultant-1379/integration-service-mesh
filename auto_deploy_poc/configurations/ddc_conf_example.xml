@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <capabilities>
+        <capability>
+            urn:ietf:params:netconf:base:1.0
+        </capability>
+    </capabilities>
+</hello>
+]]>]]>
+<?xml version="1.0" encoding="UTF-8"?>
+<rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <edit-config>
+        <target>
+            <running/>
+        </target>
+        <config>
+            <diagnostic-data-collection xmlns="urn:rdns:com:ericsson:oammodel:ericsson-data-collector-adp">
+                <collector-profile>
+                    <profile-id>defaultProfileForPeriodicTriggerDDC</profile-id>
+                    <data-to-collect>logs</data-to-collect>
+                    <data-to-collect>metrics</data-to-collect>
+                    <export-ddb-to>sftp</export-ddb-to>
+                    <log-plane>adp-app-logs*</log-plane>
+                    <log-plane>adp-app-debug-logs*</log-plane>
+                    <log-plane>adp-app-asi-logs*</log-plane>
+                    <sftp>SftpServer</sftp>
+                    <collection-window>15</collection-window>
+                </collector-profile>
+                <collector-profile>
+                    <profile-id>defaultProfileForManualTriggerDDC</profile-id>
+                    <data-to-collect>logs</data-to-collect>
+                    <export-ddb-to>sftp</export-ddb-to>
+                    <log-plane>adp-app-debug-logs*</log-plane>
+                    <log-plane>adp-app-logs*</log-plane>
+                    <log-plane>adp-app-asi-logs*</log-plane>
+                    <sftp>SftpServer</sftp>
+                    <collection-window>4320</collection-window>
+                </collector-profile>
+                <sftp-server>
+                    <name>SftpServer</name>
+                    <endpoints>
+                        <endpoint>
+                            <name>SftpEndpoint</name>
+                            <remote-address>1.2.3.4</remote-address>
+                            <remote-port>22</remote-port>
+                            <remote-path>UploadPath</remote-path>
+                            <client-identity>
+                                <username>Username</username>
+                                <password>UGNkbGNjaTE=</password>
+                            </client-identity>
+                            <server-authentication>
+                                <ssh-host-keys>
+                                    <local-definition>
+                                        <host-key>c3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFBZ1FDdExWS1BmT0hSOVRKUG91a2NwVE1yWGFyblkxM09iZlFORkdERVFIdUp1bFJNcGY2eFdjN09oWnIrbENXN0dtankyKzRhWFZhcjg0Vmt5SENqS21Ia0Ezd3FocDJCSHpobkVvNmk5L0xKVHBSS09OVHd3OU1WUmZHMW1CZHN0elZ3alJyNUlBSEt3eUxvQXBkMmJUOXhoTTFKUWd0NEZsK0hxVEl5bFozWjV3PT0gUlNBLTEwMjQK</host-key>
+                                    </local-definition>
+                                </ssh-host-keys>
+                            </server-authentication>
+                        </endpoint>
+                    </endpoints>
+                </sftp-server>
+                <data-collector>
+                    <profile>defaultProfileForPeriodicTriggerDDC</profile>
+                    <collection-interval>10</collection-interval>
+                    <administrative-state>locked</administrative-state>
+                </data-collector>
+            </diagnostic-data-collection>
+        </config>
+    </edit-config>
+</rpc>
+

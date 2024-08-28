@@ -1,0 +1,1131 @@
+# Global and common settings for installing Istio.
+
+# This file is configured for a small scale production cluster.
+# Use custom settings to tune up the CPU and scaling.
+# Additional values overrides can be used.
+
+# Each individual component will use values from this file, with defaults and 'advanced' settings included in
+# its own chart's values.yaml.
+
+enabled: true
+
+global:
+  istio:
+    kubernetes_service_ipaddress: 10.96.0.1
+  # Comma-separated minimum per-scope logging level of messages to output, in the form of <scope>:<level>,<scope>:<level>
+  # The control plane has different scopes depending on component, but can configure default log level across all components
+  # If empty, default scope and level will be used as configured in code
+  logging:
+    level: "default:info"
+
+  proxy:
+    # Log level for proxy, applies to gateways and sidecars.
+    # Expected values are: trace|debug|info|warning|error|critical|off
+    logLevel: info
+
+    # Per Component log level for proxy, applies to gateways and sidecars. If a component level is
+    # not set, then the global "logLevel" will be used.
+    componentLogLevel: "misc:error"
+
+    # This controls the 'policy' in the sidecar injector.
+    autoInject: disabled
+
+  # "soft multi-tenancy" is defined as having a single Kubernetes control plane
+  # with multiple Istio control planes and multiple meshes, one control plane
+  # and one mesh per tenant. The cluster administrator gets control and visibility
+  # across all the Istio control planes, while the tenant administrator only gets
+  # control of a specific Istio instance. Separation between the tenants is provided
+  # by Kubernetes namespaces and RBAC.
+  multiTenancy:
+    enabled: true
+
+  # Set the default behavior of the sidecar for handling outbound traffic from the application:
+  # REGISTRY_ONLY - Outbound traffic will be restricted to services defined in the service registry
+  #                 as well as those defined through ServiceEntries.
+  # ALLOW_ANY     - Outbound traffic to unknown destinations will be allowed, in case there are no
+  #                 services or ServiceEntries for the destination port.
+
+  # Configure the policy for validating JWT.
+  # Currently, two options are supported: "third-party-jwt" and "first-party-jwt".
+  jwtPolicy: "third-party-jwt"
+
+  # MeshConfig defines mesh-wide variables shared by all Envoy instances in the Istio service mesh.
+  # Refer to istio.io/v1.10/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig
+  meshConfig:
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY
+    trustDomain: "cluster.local"
+    dnsRefreshRate: 5s
+    # Default proxy config used by the proxy injection mechanism
+    # Refer to istio.io/v1.10/docs/reference/config/istio.mesh.v1alpha1/#ProxyConfig
+    defaultConfig: {}
+    localityLbSetting:
+      enabled: false
+
+eric-log-shipper:
+  global:
+  istio:
+    kubernetes_service_ipaddress: 10.96.0.1
+    logShipper:
+      deployment:
+        # Parameter required to deploy logshipper as sidecar, otherwise logshipper is deployed as daemon set by default
+        type: "sidecar"
+
+eric-mesh-controller:
+  enabled: true
+
+  pilot:
+    env:
+      ENABLE_AUTO_SNI: "false"
+      PILOT_ENABLE_INBOUND_PASSTHROUGH: "true"
+
+  sidecarInjectorWebhook: {}
+  log:
+    schema: "adp"
+
+istio-ingressgateway:
+  enabled: true
+
+istio-egressgateway:
+  enabled: false
+
+  gatewayType: egress  # Either ingress or egress
+
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http2
+    protocol: TCP
+  - port: 443
+    name: https
+    targetPort: 8443
+    protocol: TCP
+
+  service:
+    type: ClusterIP
+
+  secretVolumes:
+  - name: egressgateway-certs
+    secretName: istio-egressgateway-certs
+    mountPath: /etc/istio/egressgateway-certs
+  - name: egressgateway-ca-certs
+    secretName: istio-egressgateway-ca-certs
+    mountPath: /etc/istio/egressgateway-ca-certs
+
+  customBootstrap:
+    name: egressgw-bootstrap
+
+  ### Advanced options ############
+  # TODO: convert to real options, env should not be exposed
+  env: {}
+  #   # Set this to "external" if and only if you want the egress gateway to
+  #   # act as a transparent SNI gateway that routes mTLS/TLS traffic to
+  #   # external services defined using service entries, where the service
+  #   # entry has resolution set to DNS, has one or more endpoints with
+  #   # network field set to "external". By default its set to "" so that
+  #   # the egress gateway sees the same set of endpoints as the sidecars
+  #   # preserving backward compatibility
+  #   ISTIO_META_REQUESTED_NETWORK_VIEW: ""
+
+labels: {}
+  # ALL below are customized by UDM
+  # COPY all below to values.yaml for new service mesh version
+
+# INGRESS GATEWAYS FOR ALL NFs
+eric-ingressgw-udr-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-udm-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations:
+      addressPoolName: udm-5g-sig
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-ausf-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations:
+      addressPoolName: ausf-5g-sig
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-nef-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+# INGRESS GATEWAYS FOR PROVISIONING
+eric-ingressgw-udr-ldap-provisioning:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-udr-ldap-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-udr-intersite:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-hss-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  daemonSet: false
+  customBootstrap:
+    enabled: false
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-gw-hssims-internal:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: ClusterIP #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-eir-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  #autoScaling:
+    #enabled: false
+    #minReplicas: 2
+    #maxReplicas: 5
+  replicaCount: 2
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 350Mi
+    limits:
+      cpu: 1000m
+      memory: 350Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    type: LoadBalancer
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    annotations:
+      addressPoolName: eir-5g-sig
+  externalTrafficPolicy: Local
+  env:
+    ISTIO_META_IDLE_TIMEOUT: 300s
+  podAntiAffinityTermLabelSelector:
+  - key: istio
+    operator: In
+    values: eric-eir-traffic
+    topologyKey: "kubernetes.io/hostname"
+  revision: ""
+
+eric-ingressgw-udm-internal-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  #autoScaling:
+    #enabled: false
+    #minReplicas: 2
+    #maxReplicas: 5
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 350Mi
+    limits:
+      cpu: 1000m
+      memory: 350Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    type: ClusterIP
+    annotations:
+      cloud.google.com/load-balancer-type: "internal"
+  env:
+    ISTIO_META_IDLE_TIMEOUT: 300s
+  podAntiAffinityTermLabelSelector:
+    - key: istio
+      operator: In
+      values: eric-udm-internal-traffic
+      topologyKey: "kubernetes.io/hostname"
+  revision: ""
+
+eric-ingressgw-epc-soap-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  #autoScaling:
+    #enabled: false
+    #minReplicas: 2
+    #maxReplicas: 5
+  replicaCount: 2
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 350Mi
+    limits:
+      cpu: 1000m
+      memory: 350Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    type: LoadBalancer
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    annotations:
+      addressPoolName: ccsm-oam
+      sharedVIPLabel: ccsm-oam
+  externalTrafficPolicy: Cluster
+  env:
+    ISTIO_META_IDLE_TIMEOUT: 300s
+  podAntiAffinityTermLabelSelector:
+  - key: istio
+    operator: In
+    values: eric-epc-soap-traffic
+    topologyKey: "kubernetes.io/hostname"
+  revision: ""
+
+eric-ingressgw-nef-nbi-trust-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: true
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: {}
+
+eric-ingressgw-nef-nbi-non-trust-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: true
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: {}
+
+eric-ingressgw-nef-provisioning-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: true
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: {}
+
+eric-ingressgw-nef-sbi-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: true
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: {}
+
+eric-ingressgw-nef-oam-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: false
+  externalTrafficPolicy: Cluster
+  customBootstrap:
+    enabled: false
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: {}
+
+eric-ingressgw-eda-provisioning:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-cces-ue-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: true
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: {}
+
+eric-ingressgw-hss-epc-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  #autoScaling:
+    #enabled: false
+    #minReplicas: 2
+    #maxReplicas: 5
+  replicaCount: 2
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  # Resources are overwritten in values subChart
+  resources: {}
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    type: LoadBalancer
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    annotations:
+      addressPoolName: hss-epc-http-sig
+  externalTrafficPolicy: Local
+  env:
+    ISTIO_META_IDLE_TIMEOUT: 300s
+  podAntiAffinityTermLabelSelector:
+  - key: istio
+    operator: In
+    values: eric-hss-epc-traffic
+    topologyKey: "kubernetes.io/hostname"
+  revision: ""
+
+eric-ingressgw-ims-soap-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  #autoScaling:
+    #enabled: false
+    #minReplicas: 2
+    #maxReplicas: 5
+  replicaCount: 2
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  # Resources are overwritten in values subChart
+  resources: {}
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    type: LoadBalancer
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    annotations:
+      addressPoolName: ccsm-oam
+      sharedVIPLabel: ccsm-oam
+  externalTrafficPolicy: Cluster
+  env:
+    ISTIO_META_IDLE_TIMEOUT: 300s
+  podAntiAffinityTermLabelSelector:
+  - key: istio
+    operator: In
+    values: eric-ims-soap-traffic
+    topologyKey: "kubernetes.io/hostname"
+  revision: ""
+
+eric-ingressgw-cces-ewi-traffic:
+  log:
+    schema: "adp"
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: true
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  replicaCount: 1
+  resources: {}
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: eric-cces-ewi-server-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: eric-cces-ewi-server-certs-cacert
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-cces-nbi-heartbeat-traffic:
+  log:
+    schema: "adp"
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: false
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  replicaCount: 2
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: { }
+
+eric-ingressgw-cces-capif1-trust-traffic:
+  log:
+    schema: "adp"
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: false
+  externalTrafficPolicy: Cluster
+  customBootstrap:
+    enabled: false
+  replicaCount: 2
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations:
+      addressPoolName: cces-5g-capif1-trust-traffic
+    externalIPv4:
+      annotations:
+        addressPoolName: cces-5g-capif1-trust-traffic
+    externalIPv6:
+      annotations:
+        addressPoolName: cces-5g-capif1-trust-traffic
+
+eric-ingressgw-cces-capif1-non-trust-traffic:
+  log:
+    schema: "adp"
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: false
+  externalTrafficPolicy: Cluster
+  customBootstrap:
+    enabled: false
+  replicaCount: 2
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations:
+      addressPoolName: cces-5g-capif1-non-trust-traffic
+    externalIPv4:
+      annotations:
+        addressPoolName: cces-5g-capif1-non-trust-traffic
+    externalIPv6:
+      annotations:
+        addressPoolName: cces-5g-capif1-non-trust-traffic
+
+eric-ingressgw-nrfagent-internal-traffic:
+  log:
+    schema: "adp"
+  gatewayType: ingress
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: false
+  #autoScaling:
+    #enabled: false
+    #minReplicas: 2
+    #maxReplicas: 5
+  replicaCount: 2
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  # Resources are overwritten in values subChart
+  resources: {}
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    type: ClusterIP
+    annotations:
+      cloud.google.com/load-balancer-type: "internal"
+  env:
+    ISTIO_META_IDLE_TIMEOUT: 300s
+  podAntiAffinityTermLabelSelector:
+    - key: istio
+      operator: In
+      values: eric-nrfagent-internal-traffic
+      topologyKey: "kubernetes.io/hostname"
+  revision: ""
+
+eric-ingressgw-nrf-traffic:
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  daemonSet: true
+  customBootstrap:
+    enabled: false
+  replicaCount: 1
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  #requests:
+  #  cpu: 1800m
+  #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  podAnnotations: {}
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-nssf-traffic:
+  gatewayType: ingress
+  revision: ""
+  enabled: false
+  customBootstrap:
+    enabled: false
+  daemonSet: true
+  replicaCount: 1
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  #autoScaling:
+    #minReplicas: 2
+    #maxReplicas: 5
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+  cpu:
+    targetAverageUtilization: 80
+  memory:
+    targetAverageUtilization: 80
+  service:
+    loadBalancerIP: ""
+    annotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+  secretVolumes:
+  - name: ingressgateway-certs
+    secretName: istio-ingressgateway-certs
+    mountPath: /etc/istio/ingressgateway-certs
+  - name: ingressgateway-ca-certs
+    secretName: istio-ingressgateway-ca-certs
+    mountPath: /etc/istio/ingressgateway-ca-certs
+  nodeSelector:
+    gateway: {}
+    hooklauncher: {}
+  tolerations:
+    gateway: []
+    hooklauncher: []
+  podAntiAffinityLabelSelector: []
+  podAntiAffinityTermLabelSelector: []
+
+eric-ingressgw-cces-2nd-nbi-hb-traffic:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  enabled: false
+  gatewayType: ingress
+  revision: ""
+  daemonSet: false
+  externalTrafficPolicy: Local
+  customBootstrap:
+    enabled: false
+  replicaCount: 2
+  service:
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    loadBalancerIP: ""
+    annotations: { }

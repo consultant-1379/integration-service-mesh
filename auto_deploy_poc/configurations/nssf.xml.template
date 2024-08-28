@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+   <capabilities>
+     <capability>urn:ietf:params:netconf:base:1.0</capability>
+   </capabilities>
+ </hello>
+]]>]]>
+
+<?xml version="1.0" encoding="UTF-8"?>
+ <rpc message-id="3" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+   <edit-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+     <target><running/></target>
+     <config>
+       <nssf xmlns="urn:rdns:com:ericsson:oammodel:ericsson-nssf" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"   xmlns:ty="urn:rdns:com:ericsson:oammodel:ericsson-5gcudmpol-common">
+           <nf-profile>
+              <instance-id>13a1de33-ec45-4cd6-a842-ce5bb3cba3d8</instance-id>
+              <requested-status>registered</requested-status>
+            <snssai>
+              <id>0</id>
+              <sst>0</sst>
+              <sd>abAB01</sd>
+            </snssai>
+              <plmn-id>
+                 <mcc>460</mcc>
+                 <mnc>000</mnc>
+              </plmn-id>
+              <ipv4-address>${NODE_IP}</ipv4-address>
+              <capacity>100</capacity>
+            <priority>1</priority>
+            <locality>SH</locality>
+              <service>
+                 <instance-id>nnssf-nsselection-0001</instance-id>
+                 <name>nnssf-nsselection</name>
+               <scheme>http</scheme>
+               <requested-status>registered</requested-status>
+               <ip-endpoint>
+                  <id>1</id>
+                  <port>${NSSF_PORT}</port>
+               </ip-endpoint>
+               <allowed-plmn>
+                  <mcc>460</mcc>
+                  <mnc>000</mnc>
+               </allowed-plmn>
+               <allowed-nf-type>amf</allowed-nf-type>
+               <priority>1</priority>
+               <capacity>100</capacity>
+            </service>
+             <service>
+                <instance-id>nnssf-nssaiavailability-0001</instance-id>
+                <name>nnssf-nssaiavailability</name>
+                 <scheme>http</scheme>
+                 <requested-status>registered</requested-status>
+                 <ip-endpoint>
+                    <id>1</id>
+                    <ipv4-address>${NODE_IP}</ipv4-address>
+                    <port>${NSSF_PORT}</port>
+                 </ip-endpoint>
+                 <allowed-plmn>
+                    <mcc>460</mcc>
+                    <mnc>000</mnc>
+                 </allowed-plmn>
+                 <allowed-nf-type>amf</allowed-nf-type>
+                 <capacity>100</capacity>
+              </service>
+           </nf-profile>
+       </nssf>
+     </config>
+   </edit-config>
+ </rpc>
+

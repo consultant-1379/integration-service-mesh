@@ -1,0 +1,25 @@
+global:
+  istio:
+    egress:
+      enabled: false
+    ingress:
+      udmGateway:
+        ports:
+        - name: http2-clear
+          port: 81
+          protocol: HTTP2
+          mode: DISABLE
+          hosts:
+          - "*"
+      udmHssGateway:
+        ports:
+          - port: 82
+            name: http-clear
+            protocol: HTTP
+            hosts:
+              - "*"
+  nrfagent:
+    nfprofile:
+      name: 2c765011-3cc5-49c6-9876-ae2f5fa2a63f
+  resources:
+    enabled: "off"

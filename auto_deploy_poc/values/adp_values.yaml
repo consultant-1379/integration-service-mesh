@@ -1,0 +1,250 @@
+tags:
+  eric-adp-common: false
+  eric-data-document-database-pg: true
+  eric-cm-mediator: true
+  eric-pm-server: true
+  eric-pm-bulk-reporter: true
+  eric-data-coordinator-zk: true
+  eric-data-message-bus-kf: true
+  eric-log-shipper: true
+  eric-data-search-engine: true
+  eric-fh-alarm-handler: true
+  eric-fh-snmp-alarm-provider: true
+  eric-cm-yang-provider: true
+  eric-odca-diagnostic-data-collector: true
+  eric-log-transformer: true
+  eric-ctrl-bro: true
+  eric-sec-ldap-server: true
+  eric-sec-key-management: true
+  eric-sec-sip-tls: true
+  eric-data-distributed-coordinator-ed: true
+  eric-cnom-server: true
+  eric-tm-ingress-controller-cr: true
+  eric-lm-combined-server: true
+  eric-sec-certm: true
+  eric-lm-unique-object-reporter: true
+  eric-sec-access-mgmt: true
+  eric-sec-admin-user-management: true
+  eric-data-object-storage-mn: true
+  eric-si-application-sys-info-handler: true
+  eric-pm-resource-monitor: true
+  eric-probe-virtual-tap-broker: true
+
+global:
+  ericsson:
+    licensing:
+      licenseDomains:
+        - productType: "CCRC"
+          customerId: "800141"
+          swltId: "STB-CCRC-6"
+  createExternalCertificateCR: false
+
+eric-lm-combined-server:
+  licenseServerClient:
+    licenseServer:
+      thrift: 
+        host: "10.155.142.69"
+  licenseConsumerHandler:
+    replicaCount: 1
+  replicaCount:
+    licenseConsumerHandler: 1
+  service:
+    endpoints:
+      licenseConsumerHandler:
+        restapi:
+          tls:
+            enforced: optional
+            verifyClientCertificate: optional
+
+eric-lm-unique-object-reporter:
+  uoi:
+    hostname: "centralnels.nels.ericsson.com"
+    ip: "10.155.142.69"
+    port: 8060
+
+eric-cnom-server:
+  imageCredentials:
+    registry:
+      url: selndocker.mo.sw.ericsson.se
+      pullSecret: "selndocker"    
+
+eric-fh-alarm-handler:
+  service:
+    endpoints:
+      fiapi:
+        tls:
+          enforced: optional
+          verifyClientCertificate: optional
+  imageCredentials:
+    registry:
+      url: selndocker.mo.sw.ericsson.se
+      pullSecret: "selndocker"
+
+eric-sec-admin-user-management:
+  imageCredentials:
+    pullSecret: "armdocker"
+    image1:
+      registry:
+        url: armdocker.rnd.ericsson.se
+  iam:
+    enabled: true
+
+eric-fh-snmp-alarm-provider:
+  imageCredentials:
+    registry:
+      url: selndocker.mo.sw.ericsson.se
+      pullSecret: "selndocker"
+  service:
+    allocateLoadBalancerNodePorts: true
+
+eric-pm-bulk-reporter:
+  env:
+    nodeName: test
+    nodeType: 5G_UDM
+  service:
+    allocateLoadBalancerNodePorts: true
+
+eric-pm-server:
+  rbac:
+    appMonitoring:
+      enabled: true
+    clusterMonitoring:
+      enabled: false
+  pmMetrics:
+    enableQueryMetricsCommands: true
+  pmJobs: |
+    - job_name: 'ccsm-pods'
+      scheme: https
+      tls_config:
+        ca_file: /run/secrets/cacert/cacertbundle.pem
+        cert_file: /run/secrets/clicert/clicert.pem
+        key_file: /run/secrets/clicert/cliprivkey.pem
+        server_name: eric-ccsm-certified-scrape-target
+        insecure_skip_verify: true
+      kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+              - {{ .Release.Namespace }}
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_container_port_name]
+          action: keep
+          regex: metrics
+        - source_labels: [__meta_kubernetes_pod_label_tls_ccsm_ericsson_com_pmCa]
+          action: keep
+          regex: (.+)
+        - action: labelmap
+          regex: _meta_kubernetes_pod_label(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: kubernetes_pod_name
+
+eric-cm-yang-provider:
+  ldap:
+    enableChangePassword: false
+  #env:
+  #  logLevel: debug
+  service:
+    allocateLoadBalancerNodePorts: true
+
+eric-data-document-database-pg:
+  brAgent:
+    backupTypeList:
+    - "eric-ccrc-configuration-data"
+    brLabelValue: eric-ccrc-configuration-data
+
+eric-data-document-database-pg-lm:
+  enabled: true
+
+eric-data-message-bus-kf:
+  configurationOverrides:
+    message.max.bytes: "2097152"
+
+eric-cm-mediator:
+  dbbr:
+    backupType: "eric-ccrc-configuration-data"
+  cmm:
+    kafkaProducerConfig: '{"max_request_size": 2097152}'
+ #   logLevel: "Debug"
+
+eric-sec-access-mgmt:
+  ldap:
+    enabled: true
+  # required for IAM >= 8.1.0 and ansible cluster where iccr ingress cannot be used
+  # add ip of master node for 3 clusters
+  http:
+    hostValidation:
+      allowedHosts: 10.117.147.98,10.120.72.52,10.210.33.157
+
+eric-sec-ldap-server:
+  brAgent:
+    backupTypeList:
+    - "eric-ccrc-configuration-data"
+    brLabelValue: "eric-ccrc-ldap-server"
+#  ldap:
+#    aum:
+#      enabled: false
+  replicaCount: 2
+
+eric-data-distributed-coordinator-ed:
+  brAgent:
+    brLabelValue: "eric-ccrc-dced"
+    backupTypeList:
+    - "eric-ccrc-configuration-data"
+
+eric-ctrl-bro:
+  bro:
+    vBRMAutoCreate: NONE
+
+eric-log-transformer:
+  # queue:
+    # sizePerPipeline: 2048
+  # logLevel: "debug"
+  replicaCount: 2
+  jvmHeap: 4096m
+  resources:
+    logtransformer:
+      requests:
+        cpu: 1000m
+        memory: 6Gi
+      limits:
+        cpu: 2000m
+        memory: 6Gi
+  searchengine:
+    logplaneConfig:
+    - field: "[extra_data][asi][log_plane]"
+      value: "alarm"
+      newLogplane: "adp-app-asi-logs"
+    - field: "[facility]"
+      value: "log audit"
+      newLogplane: "adp-app-audit-logs"
+    - field: "[severity]"
+      value: "debug"
+      newLogplane: "adp-app-debug-logs"
+    - field: "[severity]"
+      value: "DEBUG"
+      newLogplane: "adp-app-debug-logs"
+    - field: "[level]"
+      value: "DEBUG"
+      newLogplane: "adp-app-debug-logs"
+    - field: "[facility]"
+      value: "security/authorization messages"
+      newLogplane: "adp-app-security-logs"
+
+eric-data-search-engine:
+  replicaCount:
+    ingest: 1
+    data: 3
+  jvmHeap:
+    data: "2048m"
+  resources:
+    data:
+      limits:
+        cpu: "1000m"
+        memory: "4Gi"
+      requests:
+        cpu: "1000m"
+        memory: "4Gi"   

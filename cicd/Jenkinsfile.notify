@@ -1,0 +1,101 @@
+def _credentials = "userpwd-adp"
+def _chart_name = params.CHART_NAME
+def _chart_version = params.CHART_VERSION
+def _prepare_result = params.PREPARE_RESULT
+def _test_result = params.TESTS_RESULT
+def _deploy_result = params.DEPLOY_RESULT
+def _email_notify = params.EMAIL_NOTIFY
+def _gerrit_project = "https://esdccci@${COMMON_GERRIT_URL}/a/udmp_pocs/common_processes"
+
+def _prepare_result_style = ""
+def _deploy_result_style = ""
+def _test_result_style = ""
+
+if (_email_notify?.trim() && _chart_name?.trim()) {
+    _email_notify=", " + _email_notify
+}
+
+_prepare_result_style = _prepare_result.toLowerCase().contains('fail') ? "#ff1a1a" : "#00e639"
+_deploy_result_style = _deploy_result.toLowerCase().contains('fail') ? "#ff1a1a" : "#00e639"
+_test_result_style = _test_result.toLowerCase().contains('fail') ? "#ff1a1a" : "#00e639"
+
+if (!_chart_version.contains('+')){
+    currentBuild.result = 'SUCCESS'
+    currentBuild.description = 'Non PRA version - '+"${_chart_name}:${_chart_version}"
+
+    node('default-jenkins-slave'){
+        stage("Send email"){
+            emailext to:"${_email_notify}",
+                    subject:"Microservice ${_chart_name} [${_chart_version}] integration deploy:${_deploy_result} test: ${_test_result}",
+                    mimeType: 'text/html',
+                    body: """
+                    <h1>
+                    The Microservice ${_chart_name} [${_chart_version}] has the following results:
+                    </h1>
+                    <p>
+                      <ul>
+                        <li>Prepare: <span style=\"color:${_prepare_result_style}\">${_prepare_result}</span></li>
+                        <li>Deploy: <span style=\"color:${_deploy_result_style}\">${_deploy_result}</span></li>
+                        <li>Test: <span style=\"color:${_test_result_style}\">${_test_result}</span></li>
+                        <li>Spinnaker: ${SPINNAKER_URL}</li>
+                      </ul>
+                    </p>
+                    """
+        }
+    }
+    return
+}
+
+currentBuild.description = "${_chart_name}:${_chart_version}"
+
+node('default-jenkins-slave'){
+    stage('Checkout') {
+        checkout([$class: 'GitSCM',
+            branches: [[name: "master"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [],
+            submoduleCfg: [],
+            userRemoteConfigs: [[credentialsId: "${_credentials}", name: "", refspec: "", url: "${_gerrit_project}"]]]
+        )
+    }
+    stage("Send email"){
+        def emails_list = readYaml file:"adp_gs/owners.yaml"
+        emails_list = emails_list["services"]
+        def _send_to
+        def link
+        emails_list.each{ value ->
+            if (value["id"]== _chart_name){
+                _send_to = value["owners"]["mail"].join(",")
+                link = value["link"]
+            }
+        }
+        print "Email will be sent to:${_send_to}"
+        print "Marketplace link:${link}"
+        print "Spinnaker link:${SPINNAKER_URL}"
+
+        emailext to:"${_send_to}${_email_notify}",
+                subject:"[CI Automation]${_chart_name} has a new PRA version: [${_chart_version}] [deploy:${_deploy_result}] [test:${_test_result}]",
+                mimeType: 'text/html',
+                body: """
+                <h1>
+                The Microservice ${_chart_name} has a new PRA version:[${_chart_version}] with the following results:\n
+                </h1>
+                <p><ul>
+                <li>Prepare: <span style=\"color:${_prepare_result_style}\">${_prepare_result}</span></li>
+                <li>Deploy: <span style=\"color:${_deploy_result_style}\">${_deploy_result}</span></li>
+                <li>Test: <span style=\"color:${_test_result_style}\">${_test_result}</span></li>
+                <li>Marketplace: ${link}</li>
+                <li>Spinnaker: ${SPINNAKER_URL}</li>
+                </ul></p>
+
+                <h3 style=\"color:#ff1a1a\">
+                    PLEASE, REMEMBER THAT IT IS EXPECTED TO RECEIVE FEEDBACK ABOUT THE IMPACTS OF THIS NEW VERSION, AS DEFINED IN
+
+                    <a href=\"https://confluence.lmera.ericsson.se/display/PUPDF/External+Dependencies\">External Dependencies Confluence</a>
+
+                    IN THE “NOTIFICATION ABOUT THE CHANGES” SECTION. IF YOU HAVE NOT YET ANALYZED THE INFORMATION OF THIS NEW RELEASE AND SENT
+                    THIS INFORMATION, PLEASE CONSIDER DOING IT AS SOON AS POSSIBLE
+                </h3>
+                """
+    }
+}

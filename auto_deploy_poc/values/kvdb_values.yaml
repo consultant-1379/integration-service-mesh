@@ -1,0 +1,100 @@
+global:
+  security:
+    tls:
+      enabled: false
+eric-data-kvdb-ag:
+  leadership:
+    zookeeper:
+      port: 2181
+  data:
+    persistentVolumeClaim:
+      storageClass: erikube-rbd
+  backup:
+    persistentVolumeClaim:
+      storageClass: erikube-rbd
+  jvmHeap:
+    database:
+      locator: 600m
+      server: 3000m
+  jvmOptions:
+    database:
+      server:
+      - '"-XX:+UseG1GC"'
+      - '"-XX:MaxGCPauseMillis=8"'
+      - '"-XX:+UnlockExperimentalVMOptions"'
+      - '"-XX:G1NewSizePercent=1"'
+      - '"-XX:G1MixedGCCountTarget=64"'
+      - '"-XX:+ParallelRefProcEnabled"'
+      - '"-Xlog:gc:file=srvgc.log:utctime"'
+      - '"-Dgemfire.EXPIRY_THREADS=1"'
+      - '"-Dgemfire.disk.recoverValuesSync=true"'
+      - '"-Dgemfire.off-heap-memory-size=8000m"'
+      - '"-Dgemfire.critical-off-heap-percentage=95"'
+      - '"-Dgemfire.critical-heap-percentage=95"'
+      - '"-Dgemfire.max-wait-time-reconnect=900000"'
+  persistence:
+    backup:
+      persistentVolumeClaim:
+        adminMgr:
+          size: 64Gi
+        locator:
+          size: 8Gi
+        server:
+          size: 32Gi
+    data:
+      persistentVolumeClaim:
+        adminMgr:
+          size: 4Gi
+        locator:
+          size: 4Gi
+        server:
+          size: 16Gi
+    gwsender:
+      persistentVolumeClaim:
+        size: 4Gi
+  probing:
+    liveness:
+      database:
+        initialDelaySeconds: 240
+  replicaCount:
+    locator: 2
+    server: 2
+  resources:
+    adminMgr:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    jmxExporter:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    locator:
+      limits:
+        cpu: 1200m
+        memory: 2000Mi
+      requests:
+        cpu: 1200m
+        memory: 2000Mi
+    monitor:
+      limits:
+        cpu: 400m
+        memory: 1Gi
+      requests:
+        cpu: 400m
+        memory: 1Gi
+    server:
+      limits:
+        cpu: 5000m
+        memory: 13000Mi
+      requests:
+        cpu: "0"
+        memory: "0"
+  multiSite:
+    locator:
+      localHost: 10.10.10.1

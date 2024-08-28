@@ -1,0 +1,20 @@
+global:
+  istio:
+    ingress:
+      ausfGateway:
+        ports:
+        - name: http
+          port: 84
+          protocol: HTTP2
+          mode: DISABLE
+          hosts:
+          - "*"
+    egress:
+      enabled: false
+      mode: MUTUAL
+      nrfAgent_secretName: eric-ccsm-sbi-client-certs
+      certsPath: /etc/istio/egress-certs/
+      clientCertificate: tls.crt
+      privateKey: tls.key
+      caCertsPath: /etc/istio/egress-ca-certs/
+      caCertificates: ca-chain.cert.pem

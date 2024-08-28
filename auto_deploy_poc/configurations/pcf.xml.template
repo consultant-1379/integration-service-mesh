@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+   <capabilities>
+     <capability>urn:ietf:params:netconf:base:1.0</capability>
+   </capabilities>
+ </hello>
+]]>]]>
+
+<?xml version="1.0" encoding="UTF-8"?>
+ <rpc message-id="3" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+   <edit-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+     <target><running/></target>
+     <config>
+       <pcf xmlns="urn:rdns:com:ericsson:oammodel:ericsson-pcf"   xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"   xmlns:ty="urn:rdns:com:ericsson:oammodel:ericsson-5gcudmpol-common">
+           <nf-profile>
+              <instance-id>98aae42e-da25-4329-acf0-70e2986785aa</instance-id>
+              <status>registered</status>
+              <plmn-id>
+                 <mcc>460</mcc>
+                 <mnc>000</mnc>
+              </plmn-id>
+              <fqdn>${NODE_IP}</fqdn>
+              <capacity>100</capacity>
+              <service>
+                 <instance-id>npcf-smpolicycontrol-0001</instance-id>
+                 <name>npcf-smpolicycontrol</name>
+                 <version>
+                    <api-version-in-uri>v1</api-version-in-uri>
+                    <api-full-version>1.R5.1.1</api-full-version>
+                    <expiry>2020-07-06T02:54:32Z</expiry>
+                 </version>
+                 <scheme>https</scheme>
+                 <status>registered</status>
+                 <fqdn>${NODE_IP}</fqdn>
+                 <ip-endpoint>
+                    <id>1</id>
+                    <ipv4-address>${NODE_IP}</ipv4-address>
+                    <port>${PCF_PORT}</port>
+                 </ip-endpoint>
+                 <allowed-plmn>
+                    <mcc>460</mcc>
+                    <mnc>000</mnc>
+                 </allowed-plmn>
+                 <allowed-nf-type>smf</allowed-nf-type>
+                 <capacity>100</capacity>
+              </service>
+              <service>
+                 <instance-id>npcf-am-policy-control-0001</instance-id>
+                 <name>npcf-am-policy-control</name>
+                 <version>
+                    <api-version-in-uri>v2</api-version-in-uri>
+                    <api-full-version>1.R5.1.1</api-full-version>
+                    <expiry>2020-07-06T02:54:32Z</expiry>
+                 </version>
+                 <scheme>https</scheme>
+                 <status>registered</status>
+                 <fqdn>${NODE_IP}</fqdn>
+                 <ip-endpoint>
+                    <id>1</id>
+                    <ipv4-address>${NODE_IP}</ipv4-address>
+                    <port>${PCF_PORT}</port>
+                 </ip-endpoint>
+                 <allowed-plmn>
+                    <mcc>460</mcc>
+                    <mnc>000</mnc>
+                 </allowed-plmn>
+                 <allowed-nf-type>amf</allowed-nf-type>
+                 <capacity>100</capacity>
+              </service>
+           </nf-profile>
+       </pcf>
+     </config>
+   </edit-config>
+ </rpc>
+]]>]]>
